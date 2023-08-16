@@ -4,9 +4,10 @@ const uuid = require('uuid');
 const bcrypt = require('bcryptjs');
 
 const express = require('express');
+const { isNotAuthenticated } = require('../libs/middleware/isNotAuthenticated');
 const router = express.Router();
  
-router.post(async (req, res) => {
+router.post("/register", async (req, res) => {
   console.log(req.body);
   let {company, email, password} = req.body;
   
@@ -50,18 +51,10 @@ else
 return res.status(400).redirect("/register/Invalid credentials!");
 });
 
-router.get('/register',  (req, res) => {
+router.get('/register', isNotAuthenticated, (req, res) => {
   const { message } = req.query;
-  console.log('1')
   return res.render('register', { message });
 });
-
-router.get('/register/:message', (req, res) => {
-  const { message } = req.params;
-  console.log('2')
-  return res.render('register', { message });
-});
-
 
 
 module.exports = router;

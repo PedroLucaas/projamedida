@@ -23,5 +23,8 @@
   },
   "scripts": {
     "dev": "nodemon app.js"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.3.3"
   }
 }

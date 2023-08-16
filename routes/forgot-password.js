@@ -26,6 +26,7 @@ router.post('/forgot-password', async (req, res) => {
 
     let prisma = new PrismaClient();
     let user = await prisma.user.findUnique({ where: { email }});
+    prisma.$disconnect();
 
     if(!user)
       return res.send(400).send({message: 'User not found!'});

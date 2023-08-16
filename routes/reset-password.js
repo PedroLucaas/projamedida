@@ -4,6 +4,7 @@ const uuid = require('uuid');
 const bcrypt = require('bcryptjs');
 
 const express = require('express');
+const { isNotAuthenticated } = require('../libs/middleware/isNotAuthenticated');
 const router = express.Router();
  
 router.post('/reset-password/', async (req, res) => {
@@ -40,6 +41,7 @@ router.post('/reset-password/', async (req, res) => {
     try {
       await prisma.user.update({ where: { email }, data: { password: bypass } });
       await prisma.resetPasswordToken.delete({ where: { userId: user.id } });
+      prisma.$disconnect();
       return res.status(200).send({message: 'Password changed!'});
     }
     catch (e) {
@@ -49,12 +51,13 @@ router.post('/reset-password/', async (req, res) => {
 });
 
 
-router.get('/reset-password/',  async (req, res) => {
+router.get('/reset-password/', isNotAuthenticated, async (req, res) => {
   const { message, token  } = req.query;
 
   let prisma = new PrismaClient();
 
   const testToken = await prisma.resetPasswordToken.findUnique({ where: { token } })
+  prisma.$disconnect();
   if(!testToken)
     return res.status(400).send({message: 'Invalid token!'});
 
@@ -63,12 +66,5 @@ router.get('/reset-password/',  async (req, res) => {
 
   return res.render('reset-password', { message });
 });
-
-router.get('/reset-password/:message', (req, res) => {
-  const { message } = req.params;
-  return res.render('reset-password', { message });
-});
-
-
 
 module.exports = router;
