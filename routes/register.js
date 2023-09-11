@@ -1,60 +1,60 @@
-const { isValidEmail, isValidPassword } = require('../libs/verify/Credentials')
+const { isValidEmail, isValidPhone } = require('../libs/verify/Credentials')
 const { PrismaClient } = require('@prisma/client');
-const uuid = require('uuid');
+const { isNotAuth } = require('../libs/middleware/isNotAuth');
 const bcrypt = require('bcryptjs');
 
 const express = require('express');
-const { isNotAuthenticated } = require('../libs/middleware/isNotAuthenticated');
 const router = express.Router();
  
-router.post("/register", async (req, res) => {
+router.post("/register", isNotAuth, async (req, res) => {
+  let {company, email, phone} = req.body;
+  phone.replaceAll(" ", "");
   console.log(req.body);
-  let {company, email, password} = req.body;
-  
-  if(email && password && company) {
+  if(company && email && phone) {
     if(!isValidEmail(email)) 
-    return res.status(400).redirect("/register/Invalid email!");
+    return res.redirect("register/?error=" + decodeURIComponent('Invalid email!'));
   
-  if(!isValidPassword(password))
-  return res.status(400).redirect("/register/Invalid password!");
+    // if(!isValidPhone(phone))
+    //   return res.redirect("register/?error=" + decodeURIComponent('Invalid phone!'));
+    let prisma = new PrismaClient();
 
-let prisma = new PrismaClient();
+    let haveThisEmail = await prisma.provider.findUnique({ where: { email }});
 
-let haveThisEmail = await prisma.user.findUnique({ where: { email }});
-if(haveThisEmail)
-return res.status(400).redirect("/register/User already exists!");
+    if(haveThisEmail)
+      return res.redirect("register/?error=" + decodeURIComponent('Email Already registered!'));
 
-haveThisCompany = await prisma.user.findUnique({ where: { company }});
-if(haveThisCompany)  
-return res.status(400).redirect("/register/User already exists!");
+    let provider;
+    let haveThisCompany = await prisma.provider.findUnique({ where: { company }});
+    await prisma.$disconnect();
 
-try {
-  let bypass = await bcrypt.hash(password, 10);
-  let user = await prisma.user.create({
-    data: {
-      email,
-      password: bypass,
-      company
+    if(haveThisCompany)  
+      return res.redirect("register/?error=" + decodeURIComponent('Company Already registered!'));
+
+    try { 
+      provider = await prisma.provider.create({
+        data: {
+          company,
+          email,
+          phone,
+        }
+      });
+      await prisma.$disconnect();
+      return res.redirect('/send-email-verification/provider/?email=' + provider.email);
     }
-  });
-  prisma.$disconnect();
-}
-catch(err) {
-  console.log(err);
-  return res.status(500).redirect("/register/Internal server error!");
-}
-finally {  
-  return res.status(200).send({message: 'User created!'});
-}
-}
-else 
-return res.status(400).redirect("/register/Invalid credentials!");
+    catch(err) {
+      return res.redirect("register/?error=" + decodeURIComponent('Error when Registering!'));
+    }
+  }
+  else 
+    return res.redirect("register/?error=" + decodeURIComponent('Invalid Credentials!'));
 });
 
-router.get('/register', isNotAuthenticated, (req, res) => {
-  const { message } = req.query;
-  return res.render('register', { message });
+router.get('/register', isNotAuth, (req, res) => {
+  var { error, success } = req.query;
+  error = error ? decodeURIComponent(error) : null;
+  success = success ? decodeURIComponent(success) : null;
+  return res.render('register', { error, success });
 });
 
-
+  
 module.exports = router;

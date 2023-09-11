@@ -1,7 +1,7 @@
 const express = require('express');
-const { isAuthenticated } = require('../libs/middleware/isAuthenticated');
+const { isAuth } = require('../libs/middleware/isAuth');
 const router = express.Router();
 
-router.get('/logout', isAuthenticated, async (req, res) => res.clearCookie("token").redirect('/login'));
+router.get('/logout', isAuth, (res) => res.clearCookie("token").redirect('/login'));
 
 module.exports = router;

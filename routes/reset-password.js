@@ -1,70 +1,73 @@
 const { isValidEmail, isValidPassword } = require('../libs/verify/Credentials')
 const { PrismaClient } = require('@prisma/client');
-const uuid = require('uuid');
 const bcrypt = require('bcryptjs');
 
 const express = require('express');
-const { isNotAuthenticated } = require('../libs/middleware/isNotAuthenticated');
+const { isNotAuth } = require('../libs/middleware/isNotAuth');
 const router = express.Router();
  
-router.post('/reset-password/', async (req, res) => {
+router.post('/reset-password/', isNotAuth, async (req, res) => {
   let { email, password, token } = req.body;
  
   console.log(req.body);
   
   if(email && password) {
     if(!isValidEmail(email))
-      return res.status(400).send({message: 'Invalid email!'});
+      return res.redirect("reset-password/?error=" + encodeURIComponent('Invalid Email!'));
 
     if(!isValidPassword(password))
-      return res.status(400).send({message: 'Invalid password!'});
+      return res.redirect("reset-password/?error=" + encodeURIComponent('Invalid Password!'));
 
     let prisma = new PrismaClient();
     let user = await prisma.user.findUnique({ where: { email }});
+    await prisma.$disconnect();
 
     if(!user)
-      return res.status(400).send({message: 'User not found!'});
+      return res.redirect("reset-password/?error=" + encodeURIComponent('User Not Found!'));
 
     let verifyToken = await prisma.resetPasswordToken.findUnique({ where: { token }});
 
     if(!verifyToken)
-      return res.status(400).send({message: 'Invalid token!'});
+      return res.redirect("reset-password/?error=" + encodeURIComponent('Invalid Token!'));
 
     let bypass;
+    
     try {
       bypass = await bcrypt.hash(password, 10);
     }
     catch (e) {
-      return res.status(500).send({message: 'error new crypto pass!'});
+      return res.redirect("reset-password/?error=" + encodeURIComponent('Invalid Password!'));
     }
     
     try {
       await prisma.user.update({ where: { email }, data: { password: bypass } });
       await prisma.resetPasswordToken.delete({ where: { userId: user.id } });
-      prisma.$disconnect();
-      return res.status(200).send({message: 'Password changed!'});
+      await prisma.$disconnect();
+      return res.redirect("login/?success=" + encodeURIComponent('User Updated'));
     }
     catch (e) {
-      return res.status(500).send({message: 'error reset password!'});
+      return res.redirect("reset-password" + encodeURIComponent('Invalid Password!'));
     }
   }
 });
 
 
-router.get('/reset-password/', isNotAuthenticated, async (req, res) => {
-  const { message, token  } = req.query;
+router.get('/reset-password/', isNotAuth, async (req, res) => {
+  var { token, success, error  } = req.query;
+  error = error ? decodeURIComponent(error) : null;
+  success = success ? decodeURIComponent(success) : null;
 
   let prisma = new PrismaClient();
 
   const testToken = await prisma.resetPasswordToken.findUnique({ where: { token } })
   prisma.$disconnect();
   if(!testToken)
-    return res.status(400).send({message: 'Invalid token!'});
+    return res.send({message: 'Invalid token!'});
 
   if(token != testToken.token)
-    res.status(403).send({message: 'Invalid token!'});
+    res.send({message: 'Invalid token!'});
 
-  return res.render('reset-password', { message });
+  return res.render('reset-password', { success, error });
 });
 
 module.exports = router;

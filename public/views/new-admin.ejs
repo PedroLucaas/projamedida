@@ -4,12 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../css/output.css">
-    <link
-     rel="stylesheet"
-     href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css"
-   />
-   <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
-  <title>PAM Fornecedores | Register</title>
+    <title>PAM Fornecedores | New Admin</title>
 </head>
 <body>
   <section class="bg-gray-50 dark:bg-gray-900">
@@ -19,7 +14,7 @@
         </a>
         <div class="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
             <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
-                <% if(error) { %>
+              <% if(error) { %>
                 <div id="error-box" class="flex items-center p-4 mb-4 text-sm text-red-800 border border-red-300 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400 dark:border-red-800" role="alert">
                     <svg class="flex-shrink-0 inline w-4 h-4 mr-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
@@ -42,12 +37,12 @@
                 </div>
           <% } %>
                 <h1 class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
-                    Become a new Projamedida's Provider!
+                    Create and admin
                 </h1>
-                <form class="space-y-4 md:space-y-6" id="form" method="POST" action="/register">
+                <form class="space-y-4 md:space-y-6" id="register-form" method="POST" action="/new-admin">
                       <div>
-                        <label for="company" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your Company:</label>
-                        <input oninput="verifyCompany()" type="text" required name="company" id="company" placeholder="Company, LDA." class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-orange-500 focus:border-orange-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-orange-400 dark:focus:border-orange-400">
+                        <label for="company" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your name:</label>
+                        <input oninput="verifyCompany()" type="text" required name="company" id="company" placeholder="ex: Cristiano Ronaldo" class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-orange-500 focus:border-orange-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-orange-400 dark:focus:border-orange-400">
                         <p id="company-message" class="mt-2 text-xs text-red-600 dark:text-red-400"></p>    
                     </div>
                     <div>
@@ -56,24 +51,12 @@
                         <p id="email-message" class="mt-2 text-xs text-red-600 dark:text-red-400"></p>    
                     </div>
                     <div>
-                        <label for="phone" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Telefone:</label>
-                        <div>
-                          <input oninput="" type="tel" required name="phone" id="phone" class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-orange-500 focus:border-orange-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-orange-400 dark:focus:border-orange-400">
-                        </div>
-                        <p id="phone-message" class="mt-2 text-xs text-red-600 dark:text-red-400"></p>    
+                        <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Password:</label>
+                        <input oninput="verifyPassword()" type="password" required name="password" id="password" placeholder="••••••••" class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-orange-500 focus:border-orange-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-orange-400 dark:focus:border-orange-400">
+                        <p id="password-message" class="mt-2 text-xs text-red-600 dark:text-red-400"></p>    
 
                     </div>
-                    <div class="flex items-start">
-                        <div class="flex items-center h-5">
-                          <input id="terms" required aria-describedby="terms" type="checkbox" class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-orange-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-orange-500 dark:ring-offset-gray-800" required="">
-                        </div>
-                        <div class="ml-3 text-sm">
-                          <label for="terms" class="font-light text-gray-500 dark:text-gray-300">I accept the <a class="font-medium text-orange-500 hover:underline dark:text-orange-400" href="#">Terms and Conditions</a></label>
-                        </div>
-                    </div>
                     <button type="submit" id="btn" class="w-full text-white bg-orange-500 hover:bg-orange-600 focus:ring-4 focus:outline-none focus:ring-orange-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-orange-500 dark:hover:bg-orange-600 dark:focus:ring-orange-700">Create an account</button>
-                    <p class="text-sm font-light text-gray-500 dark:text-gray-400">
-                        Already have an account? <a href="/login" class="font-medium text-orange-500  hover:underline dark:text-orange-400">Login here</a>
                     </p>
                   </form>
               </div>
@@ -83,7 +66,7 @@
     <script>
       const credentials = {
         email: document.getElementById("email"),
-        phone: document.getElementById("phone"),
+        password: document.getElementById("password"),
         company: document.getElementById("company")
       }
 
@@ -99,6 +82,18 @@
         }
       }
 
+      function verifyPassword() {
+        const regexPassword = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/gm;
+        if(regexPassword.test(credentials.password.value)) {
+          unsetError("password");
+          return true
+        }
+        else {
+          setError("Please enter a valid password!", "password");
+          return false;
+        }
+      }
+
       function verifyCompany() {
         const company = credentials.company.value;        
         if(company) {
@@ -106,7 +101,7 @@
           return true
         }
         else {
-          setError("Please enter a Company Name!", "company");
+          setError("Please enter a Name!", "company");
           return false;
         }
       }
@@ -122,23 +117,14 @@
         label.style.display = 'none';
       }
 
-      const form = document.getElementById('form');
+      const form = document.getElementById('register-form');
       form.addEventListener('submit', (e) => {
         e.preventDefault();
-        if(verifyEmail() && verifyCompany()) 
+        if(verifyEmail() && verifyPassword() && verifyCompany()) 
           form.submit();
         else 
           window.alert('Please enter all required fields');
       });
     </script>
-     <script>
-      const phoneInputField = document.querySelector("#phone");
-      const phoneInput = window.intlTelInput(phoneInputField, {
-        initialCountry: "pt",
-        utilsScript:
-          "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
-      });
-      phoneInputField.style.width = "46vh"
-    </script>
-  </body>
+</body>
 </html>

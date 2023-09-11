@@ -4,51 +4,54 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const express = require('express');
-const { isNotAuthenticated } = require('../libs/middleware/isNotAuthenticated');
+const { isNotAuth } = require('../libs/middleware/isNotAuth');
 const router = express.Router();
  
-router.post("/login", async (req, res) => {
+router.post("/login", isNotAuth, async (req, res) => {
   let {email, password} = req.body;
 
   if(email && password) {
     if(!isValidEmail(email)) 
-    return res.status(400).redirect("login/Invalid email!");
+    return res.redirect("login/?error=" + encodeURIComponent("Invalid Email!"));
   
-  if(!isValidPassword(password))
-    return res.status(400).redirect("login/Invalid password!");
+    if(!isValidPassword(password))
+      return res.redirect("login/?error=" + encodeURIComponent("Invalid Password!"));
 
-  let prisma = new PrismaClient();
-  let user = await prisma.user.findUnique({ where: { email }});
-  prisma.$disconnect();
-  
-  if(user) {
-    let valid = await bcrypt.compare(password, user.password);
-    if(valid) {
-      let token = jwt.sign({
-        id: user.id,
-        role: user.role,
-      }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    let prisma = new PrismaClient();
+    let user = await prisma.user.findUnique({ where: { email }});
+    await prisma.$disconnect();
+    
+    if(user) {
+      let valid = await bcrypt.compare(password, user.password);
+      console.log(valid);
+        if(valid) {
+          let token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-      res.cookie('token', token, {
-        maxAge: 3600000,
-      })
-      
-      return res.redirect("/");
+          res.cookie('token', token, {
+            maxAge: 3600000,
+          })
+
+          res.cookie('id', user.id, {
+            maxAge: 3600000,
+          })
+
+          return res.redirect("/" + user.role.toLowerCase());
+        }
+        else
+          return res.redirect(`login/?error=` + encodeURIComponent('Invalid Credentials!'));
+      }
+      else
+        return res.redirect(`login/?error=` + encodeURIComponent('User Not Found!'));
     }
     else
-      return res.status(400).redirect("login/Invalid credentials!");
-  }
-  else 
-    return res.status(400).redirect("login/Invalid credentials!");
+      return res.redirect(`login/?error=` + encodeURIComponent('Invalid Password!'));
+  });
 
-  }
-  else 
-    return res.status(400).redirect("login/Invalid credentials!");
-});
-
-router.get('/login', isNotAuthenticated, (req, res) => {
-  const { message } = req.query;
-  res.render('login', { message });
+router.get('/login', isNotAuth, (req, res) => {
+  var { error, success } = req.query;
+  error = error ? decodeURIComponent(error) : null;
+  success = success ? decodeURIComponent(success) : null;
+  res.render('login', { error, success });
 });
 
 
